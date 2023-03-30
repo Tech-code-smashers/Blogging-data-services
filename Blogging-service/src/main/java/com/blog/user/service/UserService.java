@@ -1,17 +1,17 @@
 package com.blog.user.service;
-
 import com.blog.user.model.UserDto;
 import com.blog.user.responses.CommonControllerResponse;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
 
     public CommonControllerResponse<UserDto> insertOrUpdate(UserDto userDto);
-    public CommonControllerResponse<UserDto> Delete(List<Integer> ids);
-    public CommonControllerResponse<List<UserDto>> findAllWithPaginationAndSorting(int page, int size, String sortBy,
+    public CommonControllerResponse<String> Delete(List<Integer> ids);
+    public CommonControllerResponse<List<UserDto>> findAllWithPaginationAndSorting(int page, Integer size, String sortBy,
                                                                              String sortOrder);
+    public CommonControllerResponse<UserDto> findByUserName(String userName);
 
 
 
