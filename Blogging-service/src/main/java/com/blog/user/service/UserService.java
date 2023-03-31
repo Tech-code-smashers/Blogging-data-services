@@ -14,7 +14,5 @@ public interface UserService {
     public CommonControllerResponse<UserDto> findByUserName(String userName);
 
 
-
-
-
+    CommonControllerResponse<UserDto> findById(Integer id);
 }
