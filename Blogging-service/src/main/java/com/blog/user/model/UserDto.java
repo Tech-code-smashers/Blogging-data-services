@@ -1,15 +1,30 @@
 package com.blog.user.model;
 
-import com.blog.user.entity.Users;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @JacksonXmlRootElement(localName = "Users")
 public class UserDto {
     private Integer id;
+
+    @NotEmpty(message = "Name cannot be null")
     private String name;
+    @NotEmpty(message = "Last name cannot be null")
     private String lastName;
+
+    @NotNull(message = "User name cannot be null")
+    @Size(min = 5,max = 10,message = "Length should be in b/w 5 to 10")
     private String userName;
+
+    @NotEmpty(message = "Email cannot be null")
+    @Email(message = "Email is not valid",regexp = "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$")
     private String email;
+
+    @NotEmpty(message = "password cannot be null")
+    @Size(min = 5,max = 15,message = "Length should be in b/w 5 to 15 letter")
     private String password;
     private String about;
 

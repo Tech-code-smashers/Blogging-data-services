@@ -5,12 +5,11 @@ import com.blog.user.model.UserDto;
 import com.blog.user.responses.CommonControllerResponse;
 import com.blog.user.service.UserService;
 import com.blog.user.utils.CommonUtils;
-import org.slf4j.LoggerFactory;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.logging.Logger;
+
 
 @RestController
 @RequestMapping(CommonUtils.API_URL.ACCESS_URL)
@@ -31,8 +30,13 @@ public class UserController {
         return userService.findByUserName(userName);
     }
 
+    @GetMapping(CommonUtils.API_URL.FIND_BY_ID)
+    public CommonControllerResponse<UserDto> findById(@PathVariable Integer id){
+        return userService.findById(id);
+    }
+
     @PostMapping(CommonUtils.API_URL.INSERT_USER)
-    public CommonControllerResponse<UserDto> insert(@RequestBody UserDto userDto){
+    public CommonControllerResponse<UserDto> insert(@Valid @RequestBody UserDto userDto){
       return  userService.insertOrUpdate(userDto);
     }
 

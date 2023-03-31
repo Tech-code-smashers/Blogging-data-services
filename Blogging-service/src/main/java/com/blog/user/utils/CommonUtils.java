@@ -11,6 +11,7 @@ public interface CommonUtils {
         String DELETE_USER = ACCESS_URL+"/delete";
         String FIND_ALL_WITH_PAGINATION= ACCESS_URL+"/findAll";
         String FIND_BY_USERNAME = ACCESS_URL+"/findByUserName";
+        String FIND_BY_ID = ACCESS_URL+"/findById/{id}";
     }
 
     interface RESPONSE_MESSAGE{
