@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
-
 import static com.blog.user.utils.CommonUtils.EXCEPTION_MESSAGE.NOT_FOUND;
 
 @RestControllerAdvice
@@ -46,6 +45,14 @@ public class BlogException {
         CommonControllerResponse<DataIntegrityViolationException>  res =  new CommonControllerResponse<>();
         res.setMessage(exMsg.getMessage());
         res.setStatus(HttpStatus.CONFLICT.name());
+        return res;
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class )
+    public CommonControllerResponse<IllegalArgumentException> constraintViolationException(IllegalArgumentException  exMsg){
+        CommonControllerResponse<IllegalArgumentException>  res =  new CommonControllerResponse<>();
+        res.setMessage(exMsg.getMessage());
+        res.setStatus(HttpStatus.BAD_REQUEST.name());
         return res;
     }
 

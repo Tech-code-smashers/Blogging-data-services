@@ -8,11 +8,15 @@ import com.blog.user.responses.CommonControllerResponse;
 import com.blog.user.service.UserService;
 import com.blog.user.utils.CommonUtils;
 import com.blog.user.utils.DataTransformation;
+import org.hibernate.HibernateException;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -48,13 +52,16 @@ public class UserServiceImpl  implements UserService {
         return  mapper.map(userDto,Users.class);
     }
 
+
+    @Transactional(rollbackFor = HibernateException.class)
     @Override
     public CommonControllerResponse<UserDto> insertOrUpdate(UserDto userDto) {
         CommonControllerResponse<UserDto> response = new CommonControllerResponse<>();
-        Users user=null;
-        user = dataTransformation.userDataTransform(userDto);
+        Users user = null;
+      //  user = dataTransformation.userDataTransform(userDto);
         try {
             if (userDto != null && userDto.getId() != 0 && userDto.getId() != null) {
+                user = repo.findById(userDto.getId()).get();
                  response.setMessage(CommonUtils.RESPONSE_MESSAGE.UPDATE_SUCCESS);
                  response.setData(etm(repo.save(user)));
                  LOGGER.info("Update data payload :{}",user);
@@ -67,7 +74,6 @@ public class UserServiceImpl  implements UserService {
         } catch (Exception ex){
             if(ex.getClass()==DataIntegrityViolationException.class){
                 throw new DataIntegrityViolationException(ex.getCause().getCause().getMessage());
-
             }else{
                 response.setMessage(ex.getCause().getMessage());
                 LOGGER.error("Error msg {}", ex.getCause().getMessage());
@@ -102,9 +108,10 @@ public class UserServiceImpl  implements UserService {
         try {
             Sort sorting = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                     : Sort.by(sortBy).descending();
-           // PageRequest page = PageRequest.of(pageNo, pageSize, sorting);
-            List<Users> list = repo.findAll();
-            if (list.size() > 0) {
+            Pageable page = PageRequest.of(pageNo, pageSize, sorting);
+            Page<Users> list = repo.findAll(page);
+            List<Users> listData= list.getContent();
+            if (listData.size() > 0) {
                 List<UserDto> userList = list.stream().map((mapObj -> etm(mapObj))).collect(Collectors.toList());
                 response.setMessage(FETCH_ALL_DETAILS);
                 response.setData(userList);
