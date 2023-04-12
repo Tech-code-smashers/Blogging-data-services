@@ -1,19 +1,17 @@
 package com.blog.user.controller;
 
-
 import com.blog.user.model.UserDto;
 import com.blog.user.responses.CommonControllerResponse;
 import com.blog.user.service.UserService;
 import com.blog.user.utils.CommonUtils;
-import org.slf4j.LoggerFactory;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.logging.Logger;
+
 
 @RestController
-@RequestMapping(CommonUtils.API_URL.ACCESS_URL)
+@RequestMapping(CommonUtils.API_URL.ACCESS_URL+"/user")
 public class UserController {
 
 
@@ -22,7 +20,10 @@ public class UserController {
 
     @GetMapping(CommonUtils.API_URL.FIND_ALL_WITH_PAGINATION)
     public CommonControllerResponse<List<UserDto>> fetchAllPaginationAndSorting
-            (@RequestParam Integer page, @RequestParam Integer  size, @RequestParam String sortBy, @RequestParam String sortOrder ){
+            (@RequestParam (value="page",required = false) int page,
+             @RequestParam (value="size",required = false)int size,
+             @RequestParam (value="sortBy",defaultValue =CommonUtils.DEFAULT_CONSTANT.ID)String sortBy,
+             @RequestParam (value="sortOrder",defaultValue = CommonUtils.DEFAULT_CONSTANT.ASC) String sortOrder){
         return  userService.findAllWithPaginationAndSorting(page,size,sortBy,sortOrder);
     }
 
@@ -31,16 +32,18 @@ public class UserController {
         return userService.findByUserName(userName);
     }
 
-    @PostMapping(CommonUtils.API_URL.INSERT_USER)
-    public CommonControllerResponse<UserDto> insert(@RequestBody UserDto userDto){
+    @GetMapping(CommonUtils.API_URL.FIND_BY_ID)
+    public CommonControllerResponse<UserDto> findById(@PathVariable Integer id){
+        return userService.findById(id);
+    }
+
+    @PostMapping(CommonUtils.API_URL.INSERT)
+    public CommonControllerResponse<UserDto> insert(@Valid @RequestBody UserDto userDto){
       return  userService.insertOrUpdate(userDto);
     }
 
-    @DeleteMapping(CommonUtils.API_URL.DELETE_USER)
+    @DeleteMapping(CommonUtils.API_URL.DELETE)
     public CommonControllerResponse<String> deleteByIds(@RequestParam List<Integer> ids){
         return userService.Delete(ids);
     }
-
-
-
 }
