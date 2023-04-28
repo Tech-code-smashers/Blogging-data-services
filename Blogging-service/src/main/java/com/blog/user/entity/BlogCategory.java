@@ -2,6 +2,9 @@ package com.blog.user.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name ="Blog_Category")
 public class BlogCategory {
@@ -12,6 +15,8 @@ public class BlogCategory {
     private String categoryTitle;
     private String description;
 
+    @OneToMany(mappedBy = "category",cascade = CascadeType.ALL)
+    private List<BlogPost> post = new ArrayList<>();
 
     public BlogCategory() {
     }

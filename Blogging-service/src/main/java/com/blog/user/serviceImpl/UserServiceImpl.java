@@ -58,7 +58,7 @@ public class UserServiceImpl  implements UserService {
     public CommonControllerResponse<UserDto> insertOrUpdate(UserDto userDto) {
         CommonControllerResponse<UserDto> response = new CommonControllerResponse<>();
         Users user = null;
-      //  user = dataTransformation.userDataTransform(userDto);
+        user = dataTransformation.userDataTransform(userDto);
         try {
             if (userDto != null && userDto.getId() != 0 && userDto.getId() != null) {
                 user = repo.findById(userDto.getId()).get();
