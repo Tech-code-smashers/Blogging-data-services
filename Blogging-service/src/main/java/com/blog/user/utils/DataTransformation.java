@@ -1,7 +1,9 @@
 package com.blog.user.utils;
 
 
+import com.blog.user.entity.BlogPost;
 import com.blog.user.entity.Users;
+import com.blog.user.model.BlogPostDto;
 import com.blog.user.model.UserDto;
 import org.springframework.stereotype.Component;
 
@@ -18,5 +20,13 @@ public class DataTransformation {
         user.setName(userDto.getName());
         user.setLastName(userDto.getLastName());
         return user;
+    }
+
+    public BlogPost BlogDataTransform(BlogPostDto blogPostDto,BlogPost blogPost){
+        blogPost.setId(blogPostDto.getId());
+        blogPost.setContent(blogPostDto.getContent());
+        blogPost.setTitle(blogPostDto.getTitle());
+        blogPost.setImageName("Default.png");
+        return blogPost;
     }
 }
