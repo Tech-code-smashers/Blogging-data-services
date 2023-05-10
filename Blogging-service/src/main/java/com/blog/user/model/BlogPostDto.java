@@ -1,15 +1,18 @@
 package com.blog.user.model;
 
-import com.blog.user.entity.BlogCategory;
-import com.blog.user.entity.Users;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.HashSet;
+import java.util.Set;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BlogPostDto {
-
     private Integer id;
     private String title;
     private String content;
-    private Users user;
-    private BlogCategory blogCategory;
+    private UserDto user;
+    private CategoryDto blogCategory;
+    private Set<CommentsDto> comments = new HashSet<>();
 
     public Integer getId() {
         return id;
@@ -31,19 +34,22 @@ public class BlogPostDto {
         this.content = content;
     }
 
-    public Users getUser() {
+    public UserDto getUser() {
         return user;
     }
-
-    public void setUser(Users user) {
+    public void setUser(UserDto user) {
         this.user = user;
     }
-
-    public BlogCategory getBlogCategory() {
+    public CategoryDto getBlogCategory() {
         return blogCategory;
     }
-
-    public void setBlogCategory(BlogCategory blogCategory) {
+    public void setBlogCategory(CategoryDto blogCategory) {
         this.blogCategory = blogCategory;
+    }
+    public Set<CommentsDto> getComments() {
+        return comments;
+    }
+    public void setComments(Set<CommentsDto> comments) {
+        this.comments = comments;
     }
 }

@@ -3,6 +3,7 @@ package com.blog.user.entity;
 import jakarta.persistence.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "BlogPost")
@@ -22,6 +23,9 @@ public class BlogPost {
     @ManyToOne
     @JoinColumn(name = "user_Id")
     private Users user;
+
+    @OneToMany(mappedBy = "post")
+    private List<Comments> comments;
 
     public Integer getId() {
         return id;
@@ -77,5 +81,13 @@ public class BlogPost {
 
     public void setUser(Users user) {
         this.user = user;
+    }
+
+    public List<Comments> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comments> comments) {
+        this.comments = comments;
     }
 }
