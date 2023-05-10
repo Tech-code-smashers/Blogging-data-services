@@ -13,7 +13,8 @@ public interface CommonUtils {
         String FIND_ALL_WITH_PAGINATION= ACCESS_URL+"/findAll";
         String FIND_BY_USERNAME = ACCESS_URL+"/findByUserName";
         String FIND_BY_ID = ACCESS_URL+"/findById/{id}";
-        String FIND_BY_CATEGORY_TITLE = ACCESS_URL+"/findByCategoryTitle";
+        String FIND_BY_CATEGORY_Id = ACCESS_URL+"/findByCategoryId";
+        String FIND_BY_USER_ID = ACCESS_URL+"/findByUserId";
     }
 
     interface RESPONSE_MESSAGE{
@@ -30,7 +31,9 @@ public interface CommonUtils {
         String LIST_NULL = "List data either empty or null";
         String RESOURCE_NOT_FOUND = "Resource not found on the server";
         String NOT_FOUND = "Data not found";
+        String ID_NOT_FOUND= "Not Found";
         String ILLEGAL_ARGUMENT= "Illegal argument passed";
+        String EMPTY_LIST = "List is empty or size is Zero";
     }
 
     interface DEFAULT_CONSTANT{

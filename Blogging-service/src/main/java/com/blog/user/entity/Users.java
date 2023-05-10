@@ -1,7 +1,9 @@
 package com.blog.user.entity;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "Users",uniqueConstraints = { @UniqueConstraint(columnNames = { "userName" }) })
@@ -17,6 +19,11 @@ public class Users {
     private String password;
     private String about;
     private Date date = new Date();
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<BlogPost> post = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<Comments> comments;
 
     public Users() {
     }
@@ -94,5 +101,21 @@ public class Users {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public List<BlogPost> getPost() {
+        return post;
+    }
+
+    public void setPost(List<BlogPost> post) {
+        this.post = post;
+    }
+
+    public List<Comments> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comments> comments) {
+        this.comments = comments;
     }
 }

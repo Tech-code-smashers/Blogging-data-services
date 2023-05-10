@@ -31,7 +31,7 @@ public class CategoryController {
         return  service.findAllWithPaginationAndSorting(page,size,sortBy,sortOrder);
     }
 
-    @GetMapping(CommonUtils.API_URL.FIND_BY_CATEGORY_TITLE)
+    @GetMapping(CommonUtils.API_URL.FIND_BY_CATEGORY_Id)
     public CommonControllerResponse<CategoryDto> findCategoryByTitle(
             @RequestParam (value = "categoryTitle") String categoryTitle){
          return service.findByCategoryTitle(categoryTitle);
