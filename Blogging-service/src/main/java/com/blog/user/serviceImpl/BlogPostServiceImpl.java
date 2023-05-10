@@ -9,6 +9,7 @@ import com.blog.user.repository.BlogPostDao;
 import com.blog.user.repository.CategoryDao;
 import com.blog.user.repository.UserDao;
 import com.blog.user.responses.CommonControllerResponse;
+import com.blog.user.responses.responses.PostResponse;
 import com.blog.user.service.BlogPostService;
 import com.blog.user.utils.CommonUtils;
 import com.blog.user.utils.DataTransformation;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -46,21 +48,21 @@ public class BlogPostServiceImpl implements BlogPostService {
 
     @Override
     public CommonControllerResponse<BlogPostDto> insertOrUpdate(BlogPostDto postDto
-            ,Integer categoryId, Integer userId) {
+            , Integer categoryId, Integer userId) {
         CommonControllerResponse<BlogPostDto> response = new CommonControllerResponse<>();
         BlogPost blogPost;
+        BlogCategory category = categoryDao.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("CategoryId" + " " + categoryId + " " + ID_NOT_FOUND));
+        Users user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("UserId" + " " + userId + " " + ID_NOT_FOUND));
         try {
-             BlogCategory category = categoryDao.findById(categoryId).orElseThrow(()->new ResourceNotFoundException());
-             Users user =userRepo.findById(userId).orElseThrow(()->new ResourceNotFoundException());
             if (postDto != null) {
                 if (postDto.getId() > 0 && postDto.getId() != 0) {
-                    blogPost =  repo.findById(postDto.getId()).orElseThrow(()->new ResourceNotFoundException());
-                    blogPost= transformation.BlogDataTransform(postDto,blogPost);
+                    blogPost = repo.findById(postDto.getId()).orElseThrow(() -> new ResourceNotFoundException());
+                    blogPost = transformation.BlogDataTransform(postDto, blogPost);
                     blogPost.setUser(user);
                     blogPost.setCategory(category);
                     response.setMessage(CommonUtils.RESPONSE_MESSAGE.UPDATE_SUCCESS);
                     response.setData(etm(repo.save(blogPost)));
-                }else {
+                } else {
                     response.setMessage(CommonUtils.RESPONSE_MESSAGE.SAVE_SUCCESS);
                     BlogPost post = mte(postDto);
                     post.setImageName("Default.png");
@@ -69,7 +71,7 @@ public class BlogPostServiceImpl implements BlogPostService {
                     response.setData(etm(repo.save(post)));
                     LOGGER.info("save data payload :{}", postDto);
                 }
-            }else {
+            } else {
                 response.setMessage("post data cannot Be null");
             }
         } catch (Exception ex) {
@@ -79,7 +81,8 @@ public class BlogPostServiceImpl implements BlogPostService {
                 response.setMessage(ex.getCause().getMessage());
                 LOGGER.error("Error msg {}", ex.getCause().getMessage());
         }
-        return response;    }
+        return response;
+    }
 
     @Override
     public CommonControllerResponse<String> delete(List<Integer> ids) {
@@ -99,7 +102,7 @@ public class BlogPostServiceImpl implements BlogPostService {
     public CommonControllerResponse<List<BlogPostDto>> findAllWithPaginationAndSorting(int page, int size, String sortBy, String sortDir) {
         CommonControllerResponse<List<BlogPostDto>> response = new CommonControllerResponse<>();
         Sort sortByDir = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
-        PageRequest pageable = PageRequest.of(page, size, sortByDir);
+        Pageable pageable = PageRequest.of(page, size, sortByDir);
         Page<BlogPost> dataWithPagination= repo.findAll(pageable);
         List<BlogPost> listData= dataWithPagination.getContent();
         if(listData.size()>0) {
@@ -115,10 +118,22 @@ public class BlogPostServiceImpl implements BlogPostService {
     @Override
     public CommonControllerResponse<List<BlogPostDto>> findByCategoryId(Integer categoryId) {
         CommonControllerResponse<List<BlogPostDto>> response = new CommonControllerResponse<>();
-            BlogCategory blogCategory =categoryDao.findById(categoryId).orElseThrow(()->new ResourceNotFoundException(categoryId + " "+ NOT_FOUND));
-            List<BlogPost> blogPostList = repo.findByCategoryId(blogCategory.getId());
-            response.setMessage(SUCCESS);
-            response.setData(blogPostList.stream().map(obj->etm(obj)).collect(Collectors.toList()));
+        BlogCategory blogCategory =categoryDao.findById(categoryId).orElseThrow(()->new ResourceNotFoundException(categoryId + " "+ NOT_FOUND));
+        List<BlogPost> blogPostList = repo.findByCategoryId(blogCategory.getId());
+        response.setMessage(SUCCESS);
+        response.setData(blogPostList.stream().map(obj->etm(obj)).collect(Collectors.toList()));
+        return response;
+    }
+
+    @Override
+    public CommonControllerResponse<PostResponse> findBlogsByUserId(Integer userId) {
+        CommonControllerResponse<PostResponse> response = new CommonControllerResponse<>();
+        Users user =  userRepo.findById(userId).orElseThrow(()->new ResourceNotFoundException("UserId"+" "+userId+" "+ ID_NOT_FOUND));
+        List<BlogPost> blogPostList = repo.findByUserId(user.getId());
+        PostResponse postResponse = new PostResponse();
+        postResponse.setBlogPostList(blogPostList.stream().map(post->etm(post)).collect(Collectors.toList()));
+        response.setMessage(SUCCESS);
+        response.setData(postResponse);
         return response;
     }
 

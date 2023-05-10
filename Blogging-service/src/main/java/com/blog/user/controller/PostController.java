@@ -2,6 +2,7 @@ package com.blog.user.controller;
 
 import com.blog.user.model.BlogPostDto;
 import com.blog.user.responses.CommonControllerResponse;
+import com.blog.user.responses.responses.PostResponse;
 import com.blog.user.service.BlogPostService;
 import com.blog.user.utils.CommonUtils;
 import jakarta.validation.Valid;
@@ -33,13 +34,19 @@ public class PostController {
     }
 
     @GetMapping(CommonUtils.API_URL.FIND_ALL_WITH_PAGINATION)
-    public CommonControllerResponse<List<BlogPostDto>> findAllWithPaginationAndSorting(@RequestParam (value="page",required = false) int page, @RequestParam (value="size",required = false)int size,
-                                                                            @RequestParam (value="sortBy",defaultValue =CommonUtils.DEFAULT_CONSTANT.ID)String sortBy,
-                                                                            @RequestParam (value="sortOrder",defaultValue = CommonUtils.DEFAULT_CONSTANT.ASC) String sortOrder){
-        return  service.findAllWithPaginationAndSorting(page,size,sortBy,sortOrder);
+    public CommonControllerResponse<List<BlogPostDto>> findAllWithPaginationAndSorting(@RequestParam(value = "page", required = false) int page,
+                                                                                       @RequestParam(value = "size", required = false) int size,
+                                                                                       @RequestParam(value = "sortBy", defaultValue = CommonUtils.DEFAULT_CONSTANT.ID) String sortBy,
+                                                                                       @RequestParam(value = "sortOrder", defaultValue = CommonUtils.DEFAULT_CONSTANT.ASC) String sortOrder) {
+        return service.findAllWithPaginationAndSorting(page, size, sortBy, sortOrder);
     }
     @GetMapping(CommonUtils.API_URL.FIND_BY_CATEGORY_Id)
     public CommonControllerResponse<List<BlogPostDto>> findByCategoryTitle(@RequestParam("categoryId") Integer categoryId){
         return  service.findByCategoryId(categoryId);
+    }
+
+    @GetMapping(CommonUtils.API_URL.FIND_BY_USER_ID)
+    public CommonControllerResponse<PostResponse> findBlogsByUserId(@RequestParam("userId") Integer userId){
+        return  service.findBlogsByUserId(userId);
     }
 }
