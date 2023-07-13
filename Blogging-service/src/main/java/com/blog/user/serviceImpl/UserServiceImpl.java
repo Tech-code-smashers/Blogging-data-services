@@ -1,28 +1,43 @@
 package com.blog.user.serviceImpl;
 
+import com.blog.email.payload.EmailDetails;
+import com.blog.email.service.EmailService;
 import com.blog.user.entity.Users;
 import com.blog.user.globalExceptions.exception.ResourceNotFoundException;
 import com.blog.user.model.UserDto;
 import com.blog.user.repository.UserDao;
+import com.blog.user.request.UsersExcelClass;
 import com.blog.user.responses.CommonControllerResponse;
+import com.blog.user.responses.responses.CommonExcelResponse;
 import com.blog.user.service.UserService;
+import com.blog.user.utils.BlogExcelUtils;
+import com.blog.user.utils.BlogUtils;
 import com.blog.user.utils.CommonUtils;
 import com.blog.user.utils.DataTransformation;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.hibernate.HibernateException;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.blog.user.utils.CommonUtils.EXCEPTION_MESSAGE.*;
@@ -37,12 +52,16 @@ public class UserServiceImpl  implements UserService {
 
     @Autowired
     private UserDao repo;
-
+    @Autowired
+    private ApplicationContext context;
     @Autowired
     private ModelMapper mapper;
 
     @Autowired
     private DataTransformation dataTransformation;
+
+    @Autowired
+    private EmailService emailService;
 
     private UserDto etm(Users user){
       return  mapper.map(user,UserDto.class);
@@ -68,6 +87,8 @@ public class UserServiceImpl  implements UserService {
             }else{
                 response.setMessage(CommonUtils.RESPONSE_MESSAGE.SAVE_SUCCESS);
                 response.setData(etm(repo.save(user)));
+                EmailDetails emailDetails =dataTransformation.emailBody(user);
+                emailService.sendSimpleMail(emailDetails);
                 LOGGER.info("save data payload :{}",userDto);
 
             }
@@ -151,6 +172,89 @@ public class UserServiceImpl  implements UserService {
                 }
         }
         return response;
+    }
+
+    @Override
+    public ByteArrayInputStream getUserExcelTemplate(String excelType) {
+       List<String> columnList = BlogUtils.getColumns(UserDto.class);
+        return BlogExcelUtils.getExcelTemplate(SHEET_NAME,columnList,excelType);
+    }
+
+    @Override
+    public List<CommonExcelResponse> uploadExcelData(InputStream fileData, String fileName) throws IOException {
+        List<Map<String,Object>>  excelData =  BlogUtils.excelDataMap(SHEET_NAME,fileData,fileName);
+          List<CommonExcelResponse> responses =  excelData.parallelStream().map(mapObj -> {
+                CommonExcelResponse uploadResponse = new CommonExcelResponse(CommonUtils.RESPONSE_MESSAGE.SUCCESS,null,null);
+                try {
+                    Integer id = (Integer) mapObj.get(BlogUtils.getColumns(UserDto.class).get(0) == null ? 0 : Integer.parseInt(BlogUtils.getColumns(UserDto.class).get(0)));
+                    String name = (String) mapObj.get(BlogUtils.getColumns(UserDto.class).get(1));
+                    String lastName = (String) mapObj.get(BlogUtils.getColumns(UserDto.class).get(2));
+                    String userName = (String) mapObj.get(BlogUtils.getColumns(UserDto.class).get(3));
+                    String email = (String) mapObj.get(BlogUtils.getColumns(UserDto.class).get(4));
+                    String password = (String) mapObj.get(BlogUtils.getColumns(UserDto.class).get(5));
+                    String about = (String) mapObj.get(BlogUtils.getColumns(UserDto.class).get(6));
+
+                    UserDto dto = new UserDto();
+                    dto.setId(id);
+                    dto.setName(name);
+                    dto.setLastName(lastName);
+                    dto.setUserName(userName);
+                    dto.setPassword(password);
+                    dto.setEmail(email);
+                    dto.setAbout(about);
+                    bulkSaveOrUpdate(dto);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                return uploadResponse;
+            }).collect(Collectors.toList());
+            return responses;
+    }
+
+
+
+    @Override
+    public ResponseEntity<byte[]> downloadCsvFile() {
+        StringBuilder csvBuilder = new StringBuilder();
+        csvBuilder.append("Id,Name,Last Name,user name, Email, password,about,Date\n");
+        List<Users> data = repo.findAll();
+        data.forEach(csvData->{
+            String column1Data = csvData.getId().toString();
+            String column2data = csvData.getName();
+            String column3data = csvData.getLastName();
+            String column4data = csvData.getUserName();
+            String column5data = csvData.getEmail();
+            String column6data = csvData.getPassword();
+            String column7data = csvData.getAbout();
+            String column8data = csvData.getDate().toString();
+            csvBuilder.append(column1Data).append(",");
+            csvBuilder.append(column2data).append(",");
+            csvBuilder.append(column3data).append(",");
+            csvBuilder.append(column4data).append(",");
+            csvBuilder.append(column5data).append(",");
+            csvBuilder.append(column6data).append(",");
+            csvBuilder.append(column7data).append(",");
+            csvBuilder.append(column8data).append("\n");
+
+        });
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", "Users.csv");
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        return new ResponseEntity<>(csvBuilder.toString().getBytes(),headers,HttpStatus.OK);
+    }
+
+    @Override
+    public Workbook uploadUserExcel(InputStream fileData, String fileName) throws Exception {
+        BlogExcelUtils blogExcelUtils=context.getBean(BlogExcelUtils.class);
+        Workbook excelDataList = blogExcelUtils.submitExcelToProcess(fileData, SHEET_NAME, fileName,
+                UsersExcelClass.class);
+        return excelDataList;
+    }
+
+
+    public void bulkSaveOrUpdate(UserDto userDto){
+       insertOrUpdate(userDto);
     }
 
 }
