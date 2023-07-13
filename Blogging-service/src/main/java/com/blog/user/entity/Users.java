@@ -118,4 +118,20 @@ public class Users {
     public void setComments(List<Comments> comments) {
         this.comments = comments;
     }
+
+    @Override
+    public String toString() {
+        return "Users{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", userName='" + userName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", about='" + about + '\'' +
+                ", date=" + date +
+                ", post=" + post +
+                ", comments=" + comments +
+                '}';
+    }
 }

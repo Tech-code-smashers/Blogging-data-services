@@ -1,5 +1,6 @@
 package com.blog.user.utils;
 
+import com.blog.email.payload.EmailDetails;
 import com.blog.user.entity.BlogPost;
 import com.blog.user.entity.Comments;
 import com.blog.user.entity.Users;
@@ -24,6 +25,16 @@ public class DataTransformation {
         return user;
     }
 
+    public Users userDataUpdateTransform(Users user,UserDto userDto){
+        user.setUserName(userDto.getUserName());
+        user.setAbout(userDto.getAbout());
+        user.setId(userDto.getId());
+        user.setPassword(userDto.getPassword());
+        user.setEmail(userDto.getEmail());
+        user.setName(userDto.getName());
+        user.setLastName(userDto.getLastName());
+        return user;
+    }
     public BlogPost BlogDataTransform(BlogPostDto blogPostDto,BlogPost blogPost){
         blogPost.setId(blogPostDto.getId());
         blogPost.setContent(blogPostDto.getContent());
@@ -50,5 +61,14 @@ public class DataTransformation {
          comments.setId(commentRequest.getId());
          comments.setCommentMsg(commentRequest.getCommentMsg());
          return comments;
+     }
+
+     public EmailDetails emailBody(Users user){
+         EmailDetails emailDetails = new EmailDetails();
+         emailDetails.setTo(user.getEmail());
+         emailDetails.setSubject("Registration Successfully");
+         emailDetails.setMsgBody("Hi"+" "+ user.getName()+" you are now the member of Blog application"+"/n"+
+         "Thank you");
+         return emailDetails;
      }
 }

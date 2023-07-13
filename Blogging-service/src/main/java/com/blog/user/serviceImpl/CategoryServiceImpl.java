@@ -7,6 +7,7 @@ import com.blog.user.globalExceptions.exception.ResourceNotFoundException;
 import com.blog.user.model.CategoryDto;
 import com.blog.user.repository.CategoryDao;
 import com.blog.user.responses.CommonControllerResponse;
+import com.blog.user.responses.responses.CommonExcelResponse;
 import com.blog.user.service.CategoryService;
 import com.blog.user.utils.CommonUtils;
 import org.hibernate.HibernateException;
@@ -21,8 +22,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +35,9 @@ import static com.blog.user.utils.CommonUtils.StatusCode.SUCCESS;
 @Service
 public class CategoryServiceImpl implements CategoryService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
+
+    String SHEET_NAME= "CATEGORY_SERVICE";
+
     @Autowired
     private ModelMapper mapper;
     @Autowired
@@ -135,5 +140,10 @@ public class CategoryServiceImpl implements CategoryService {
             response.setMessage(ILLEGAL_ARGUMENT);
         }
         return response;
+    }
+
+    @Override
+    public List<CommonExcelResponse> uploadExcelData(InputStream fileData, String fileName) throws IOException {
+        return null;
     }
 }
