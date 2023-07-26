@@ -87,4 +87,16 @@ public class UserController {
     public ResponseEntity<byte[]> downloadGenericExcelCsv() {
         return userService.downloadCsvFile();
     }
+
+    @GetMapping(value = CommonUtils.API_URL.SEARCH)
+    public CommonControllerResponse<List<UserDto>> searchRecord(@RequestParam String keyword){
+        return userService.searchItem(keyword);
+    }
+
+    @GetMapping(value = CommonUtils.API_URL.DROPDOWN)
+    public CommonControllerResponse<List<UserDto>> dropDown(@RequestParam String keyword){
+        return userService.searchItem(keyword);
+    }
+
+
 }

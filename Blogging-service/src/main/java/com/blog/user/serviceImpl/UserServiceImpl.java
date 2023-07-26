@@ -2,6 +2,7 @@ package com.blog.user.serviceImpl;
 
 import com.blog.email.payload.EmailDetails;
 import com.blog.email.service.EmailService;
+import com.blog.kafkaProducer.KafkaEventProducer;
 import com.blog.user.entity.Users;
 import com.blog.user.globalExceptions.exception.ResourceNotFoundException;
 import com.blog.user.model.UserDto;
@@ -14,6 +15,8 @@ import com.blog.user.utils.BlogExcelUtils;
 import com.blog.user.utils.BlogUtils;
 import com.blog.user.utils.CommonUtils;
 import com.blog.user.utils.DataTransformation;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.hibernate.HibernateException;
 import org.modelmapper.ModelMapper;
@@ -32,14 +35,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
 import static com.blog.user.utils.CommonUtils.EXCEPTION_MESSAGE.*;
 import static com.blog.user.utils.CommonUtils.RESPONSE_MESSAGE.DELETE_SUCCESS;
 import static com.blog.user.utils.CommonUtils.RESPONSE_MESSAGE.FETCH_ALL_DETAILS;
@@ -56,6 +59,9 @@ public class UserServiceImpl  implements UserService {
     private ApplicationContext context;
     @Autowired
     private ModelMapper mapper;
+
+    @Autowired
+    private KafkaEventProducer kafkaEventProducer;
 
     @Autowired
     private DataTransformation dataTransformation;
@@ -82,11 +88,17 @@ public class UserServiceImpl  implements UserService {
             if (userDto != null && userDto.getId() != 0 && userDto.getId() != null) {
                 user = repo.findById(userDto.getId()).get();
                  response.setMessage(CommonUtils.RESPONSE_MESSAGE.UPDATE_SUCCESS);
-                 response.setData(etm(repo.save(user)));
+                 UserDto userDataToKafka = etm(repo.save(user));
+                    LOGGER.info("Producing data from the add record API:");
+                 produceToKafka(userDataToKafka);
+                 response.setData(userDataToKafka);
                  LOGGER.info("Update data payload :{}",user);
             }else{
                 response.setMessage(CommonUtils.RESPONSE_MESSAGE.SAVE_SUCCESS);
-                response.setData(etm(repo.save(user)));
+                UserDto userDataToKafka = etm(repo.save(user));
+                LOGGER.info("Producing data from the updating API:");
+                produceToKafka(userDataToKafka);
+                response.setData(userDataToKafka);
                 EmailDetails emailDetails =dataTransformation.emailBody(user);
                 emailService.sendSimpleMail(emailDetails);
                 LOGGER.info("save data payload :{}",userDto);
@@ -252,9 +264,40 @@ public class UserServiceImpl  implements UserService {
         return excelDataList;
     }
 
+    @Override
+    public CommonControllerResponse<List<UserDto>> searchItem(String keyword) {
+        CommonControllerResponse<List<UserDto>> response = new CommonControllerResponse<>();
+        List<Users> listUsers =repo.searchUsers(keyword);
+        response.setMessage("Search list:");
+        List<UserDto> listDto= listUsers.parallelStream().map(e->etm(e)).collect(Collectors.toList());
+        response.setData(listDto);
+        return response;
+    }
+
 
     public void bulkSaveOrUpdate(UserDto userDto){
-       insertOrUpdate(userDto);
+        insertOrUpdate(userDto);
+    }
+    public  void produceToKafka(UserDto userDto) {
+        LOGGER.info("Preparing User details to kafka {}",userDto);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String value;
+        try {
+           value =objectMapper.writeValueAsString(userDto);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        String key = userDto.getUserName();
+        Map<String,String> headersDetails= new HashMap<>();
+        headersDetails.put("Source-system", "Blog-service");
+        LOGGER.info("Producing User details to kafka with data {}",value);
+        try {
+            kafkaEventProducer.sendProducerEventSync("User-data-topic",value,key,headersDetails);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

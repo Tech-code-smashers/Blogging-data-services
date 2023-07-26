@@ -20,6 +20,8 @@ public interface CommonUtils {
         String GET_EXCEL_TEMPLATE = ACCESS_URL+"/userExcelTemplate";
         String UPLOAD_EXCEL = "/uploadExcel";
         String DOWNLOAD_CSV="/downloadCsv";
+        String SEARCH = "/search";
+        String DROPDOWN = "/dropdown";
     }
 
     interface RESPONSE_MESSAGE{

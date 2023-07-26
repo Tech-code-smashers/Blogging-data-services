@@ -24,4 +24,5 @@ public interface UserService {
     List<CommonExcelResponse> uploadExcelData(InputStream fileData, String fileName) throws IOException;
     ResponseEntity<byte[]> downloadCsvFile();
     Workbook uploadUserExcel(InputStream fileData, String fileName) throws Exception;
+    CommonControllerResponse<List<UserDto>> searchItem(String keyword);
 }
