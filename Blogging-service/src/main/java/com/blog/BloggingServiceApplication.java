@@ -13,7 +13,6 @@ public class BloggingServiceApplication {
 	ModelMapper getModelMapper(){
 		return new ModelMapper();
 	}
-
 	public static void main(String[] args) {
 		SpringApplication.run(BloggingServiceApplication.class, args);
 	}
