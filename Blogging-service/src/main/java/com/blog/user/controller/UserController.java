@@ -84,8 +84,11 @@ public class UserController {
     }
 
     @GetMapping(value = CommonUtils.API_URL.DOWNLOAD_CSV)
-    public ResponseEntity<byte[]> downloadGenericExcelCsv() {
-        return userService.downloadCsvFile();
+    public void downloadGenericExcelCsv(HttpServletResponse response) throws IOException {
+        response.setContentType("application/octet-stream");
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.addHeader("Content-Disposition","attachment; filename=" + "user.csv");
+         userService.downloadCsvFile(response);
     }
 
     @GetMapping(value = CommonUtils.API_URL.SEARCH)

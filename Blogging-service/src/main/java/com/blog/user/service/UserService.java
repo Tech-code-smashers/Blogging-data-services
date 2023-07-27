@@ -3,8 +3,8 @@ package com.blog.user.service;
 import com.blog.user.model.UserDto;
 import com.blog.user.responses.CommonControllerResponse;
 import com.blog.user.responses.responses.CommonExcelResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.springframework.http.ResponseEntity;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -22,7 +22,7 @@ public interface UserService {
     CommonControllerResponse<UserDto> findById(Integer id);
     ByteArrayInputStream getUserExcelTemplate(String excelType)throws IOException;
     List<CommonExcelResponse> uploadExcelData(InputStream fileData, String fileName) throws IOException;
-    ResponseEntity<byte[]> downloadCsvFile();
+    HttpServletResponse downloadCsvFile(HttpServletResponse response) throws IOException;
     Workbook uploadUserExcel(InputStream fileData, String fileName) throws Exception;
     CommonControllerResponse<List<UserDto>> searchItem(String keyword);
 }

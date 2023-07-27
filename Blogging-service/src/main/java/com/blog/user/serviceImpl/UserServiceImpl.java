@@ -17,6 +17,7 @@ import com.blog.user.utils.CommonUtils;
 import com.blog.user.utils.DataTransformation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.hibernate.HibernateException;
 import org.modelmapper.ModelMapper;
@@ -29,10 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayInputStream;
@@ -43,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+
 import static com.blog.user.utils.CommonUtils.EXCEPTION_MESSAGE.*;
 import static com.blog.user.utils.CommonUtils.RESPONSE_MESSAGE.DELETE_SUCCESS;
 import static com.blog.user.utils.CommonUtils.RESPONSE_MESSAGE.FETCH_ALL_DETAILS;
@@ -226,9 +225,8 @@ public class UserServiceImpl  implements UserService {
 
 
     @Override
-    public ResponseEntity<byte[]> downloadCsvFile() {
-        StringBuilder csvBuilder = new StringBuilder();
-        csvBuilder.append("Id,Name,Last Name,user name, Email, password,about,Date\n");
+    public HttpServletResponse downloadCsvFile(HttpServletResponse response) throws IOException {
+        response.getOutputStream().write("Id,Name,Last Name,user name, Email, password,about,Date\n".getBytes());
         List<Users> data = repo.findAll();
         data.forEach(csvData->{
             String column1Data = csvData.getId().toString();
@@ -239,22 +237,29 @@ public class UserServiceImpl  implements UserService {
             String column6data = csvData.getPassword();
             String column7data = csvData.getAbout();
             String column8data = csvData.getDate().toString();
-            csvBuilder.append(column1Data).append(",");
-            csvBuilder.append(column2data).append(",");
-            csvBuilder.append(column3data).append(",");
-            csvBuilder.append(column4data).append(",");
-            csvBuilder.append(column5data).append(",");
-            csvBuilder.append(column6data).append(",");
-            csvBuilder.append(column7data).append(",");
-            csvBuilder.append(column8data).append("\n");
-
+            try {
+                response.getOutputStream().write(column1Data.getBytes());
+                response.getOutputStream().write(44);
+                response.getOutputStream().write(column2data.getBytes());
+                response.getOutputStream().write(44);
+                response.getOutputStream().write(column3data.getBytes());
+                response.getOutputStream().write(44);
+                response.getOutputStream().write(column4data.getBytes());
+                response.getOutputStream().write(44);
+                response.getOutputStream().write(column5data.getBytes());
+                response.getOutputStream().write(44);
+                response.getOutputStream().write(column6data.getBytes());
+                response.getOutputStream().write(44);
+                response.getOutputStream().write(column7data.getBytes());
+                response.getOutputStream().write(44);
+                response.getOutputStream().write(column8data.getBytes());
+                response.getOutputStream().write(10);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentDispositionFormData("attachment", "Users.csv");
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        return new ResponseEntity<>(csvBuilder.toString().getBytes(),headers,HttpStatus.OK);
-    }
+             return response;
+        }
 
     @Override
     public Workbook uploadUserExcel(InputStream fileData, String fileName) throws Exception {
