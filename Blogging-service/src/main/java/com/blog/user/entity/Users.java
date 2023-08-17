@@ -1,9 +1,8 @@
 package com.blog.user.entity;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+
+import java.util.*;
 
 @Entity
 @Table(name = "Users",uniqueConstraints = { @UniqueConstraint(columnNames = { "userName" }) })
@@ -24,6 +23,11 @@ public class Users {
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Comments> comments;
+
+    @ManyToMany
+    @JoinTable(name = "users_roles",joinColumns = @JoinColumn(name = "users",referencedColumnName = "id"),
+    inverseJoinColumns = @JoinColumn(name = "roles",referencedColumnName = "id"))
+    private Set<Roles> roles = new HashSet<>();
 
     public Users() {
     }
